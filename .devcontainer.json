@@ -1,12 +1,8 @@
 {
-  "image": "tensorflow/tensorflow:latest-gpu-jupyter",
+  "image": "jupyter/datascience-notebook",
   "customizations": {
     "vscode": {
       "extensions": ["ms-python.python", "ms-toolsai.jupyter", "github.copilot"]
     }
-  },
-  "runArgs": [
-    "--gpus",
-    "all"
-  ]
+  }
 }
