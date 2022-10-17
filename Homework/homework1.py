@@ -1,7 +1,7 @@
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.integrate.solve_ivp as solve_ivp
+import scipy
 # %%
 #Question 1 constants 
 dydt = lambda y, t: -3 * y * np.sin(t)
@@ -9,11 +9,12 @@ dt = np.arange(2, 9)
 dt = 2**dt
 dt = 1/dt
 y0 = np.pi / np.sqrt(2)
-t = np.arange(0, 20, 0.01)
+t_last = 5
 ytrue = lambda t: (np.pi * (np.e ** (3 * (np.cos(t) - 1)))) / (np.sqrt(2))
 # %%
 # Question 1A
-def forward_euler(dydt, y0, t, dt):
+def forward_euler(dydt, y0, dt):
+    t = np.arange(0, t_last + dt, dt)
     y = np.zeros(len(t))
     y[0] = y0
     for i in range(1, len(t)):
@@ -23,7 +24,8 @@ def forward_euler(dydt, y0, t, dt):
 error_vals = []
 A1 = []
 for i in dt:
-    res = forward_euler(dydt, y0, t, i)
+    t = np.arange(0, t_last + i, i)
+    res = forward_euler(dydt, y0, i)
     error = np.abs(res[-1] - ytrue(t[-1]))
     error_vals.append(error)
     if i == (1 / (2 ** 8)):
@@ -47,7 +49,8 @@ A3 = a
 
 # %%
 # Question 1B
-def huen(dydt, y0, t, dt):
+def huen(dydt, y0, dt):
+    t = np.arange(0, t_last + dt, dt)
     y = np.zeros(len(t))
     y[0] = y0
     for i in range(1, len(t)):
@@ -57,7 +60,8 @@ def huen(dydt, y0, t, dt):
 error_vals = []
 A4 = []
 for i in dt:
-    res = huen(dydt, y0, t, i)
+    t = np.arange(0, t_last + i, i)
+    res = huen(dydt, y0, i)
     error = np.abs(res[-1] - ytrue(t[-1]))
     error_vals.append(error)
     if i == (1 / (2 ** 8)):
@@ -81,7 +85,8 @@ A6 = a
 
 # %%
 # Question 1C
-def adams_predictor_corrector(dydt, y0, t, dt):
+def adams_predictor_corrector(dydt, y0, dt):
+    t = np.arange(0, t_last + dt, dt)
     y = np.zeros(len(t))
     y[0] = y0
     y[1] = y[0] + dt * dydt(y[0] + dt/2 * dydt(y[0], t[0]), t[0] + dt/2)
@@ -93,7 +98,8 @@ def adams_predictor_corrector(dydt, y0, t, dt):
 error_vals = []
 A7 = []
 for i in dt:
-    res = adams_predictor_corrector(dydt, y0, t, i)
+    t = np.arange(0, t_last + i, i)
+    res = adams_predictor_corrector(dydt, y0, i)
     error = np.abs(res[-1] - ytrue(t[-1]))
     error_vals.append(error)
     if i == (1 / (2 ** 8)):
@@ -128,13 +134,25 @@ plt.show()
 # %%
 # Question 2 constants
 epsilons = [0.1, 1, 20]
-y0 = np.sqrt(3)
-dydt0 = 1
-t = np.arange(0, 33)
+y_initial = np.sqrt(3)
+dydt_initial = 1
+t_last = 32
 dt = 0.5
 
+def vdp_derivatives(t, y):
+    #let dydt = v and let y(t) = x
+    x = y[0]
+    v = y[1]
+    return np.array([v, -1 * epsilon * (x*x - 1)*v - x])
 # %%
 # Question 2A
+t = np.arange(0, t_last + dt, dt)
+#Store the solution for each epsilon in a matrix with 3 columns called A10
+A10 = np.zeros((len(t), 3))
+for i in range(len(epsilons)):
+    epsilon = epsilons[i]
+    sol = scipy.integrate.solve_ivp(fun = vdp_derivatives, t_span=[t[0], t[-1]], y0 = [y_initial, dydt_initial], t_eval=t)
+    A10[:, i] = sol.y[0, :]
 
 # %%
 # Question 2B
