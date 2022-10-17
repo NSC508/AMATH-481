@@ -1,7 +1,7 @@
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
-
+import scipy.integrate.solve_ivp as solve_ivp
 # %%
 #Question 1 constants 
 dydt = lambda y, t: -3 * y * np.sin(t)
@@ -124,6 +124,14 @@ plt.ylabel('error')
 plt.title("All Methods Error")
 plt.legend()
 plt.show()
+
+# %%
+# Question 2 constants
+epsilons = [0.1, 1, 20]
+y0 = np.sqrt(3)
+dydt0 = 1
+t = np.arange(0, 33)
+dt = 0.5
 
 # %%
 # Question 2A
