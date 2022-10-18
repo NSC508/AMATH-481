@@ -204,7 +204,7 @@ t_last = 100
 d12_d21_pairs = [(0, 0), (0, 0,2), (-0.1, 0.2), (-0.3, 0.2), (-0.5, 0.2)]
 dt = 0.5
 
-def neuron_couple(w, t, p):
+def neuron_couple(t, w, p):
     """
     Defines the differential equations for the coupled spring-mass system.
 
@@ -226,13 +226,49 @@ def neuron_couple(w, t, p):
     return f
 
 # %% 
-for pair in d12_d21_pairs:
-    d12 = pair[0]
-    d21 = pair[1]
+# Save the result of computed of the values in a 201 x 4 matrix of form [v1, w1, v2, w2]
+# Save each of the five matrices as A14-A18 respectively
+A14 = np.zeros((201, 4))
+A15 = np.zeros((201, 4))
+A16 = np.zeros((201, 4))
+A17 = np.zeros((201, 4))
+A18 = np.zeros((201, 4))
+for i in range(len(d12_d21_pairs)):
+    d12 = d12_d21_pairs[i][0]
+    d21 = d12_d21_pairs[i][1]
     p = [a_1, a_2, b, c, I, d12, d21]
-    w0 = [v1_initial, w1_initial, v2_initial, w2_initial]
     t = np.arange(0, t_last + dt, dt)
-    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = w0, method=method, args=(p,))
-    T = sol.t
-    Y = sol.y
-    
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, w1_initial, v2_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    if i == 0:
+        A14 = sol.y.T
+    elif i == 1:
+        A15 = sol.y.T
+    elif i == 2:
+        A16 = sol.y.T
+    elif i == 3:
+        A17 = sol.y.T
+    elif i == 4:
+        A18 = sol.y.T
+
+# %% 
+print(A14.shape)
+# %%
+# Presentation mastery
+
+# Plot the solution for each of the five matrices for time vs parameter (v1, w1, v2, w2) in 4 different plots
+
+parameters = ["v1", "w1", "v2", "w2"]
+for i in range(4):
+    plt.plot(t, A14[:, i], label="d12 = 0, d21 = 0")
+    plt.plot(t, A15[:, i], label="d12 = 0, d21 = 0.2")
+    plt.plot(t, A16[:, i], label="d12 = -0.1, d21 = 0.2")
+    plt.plot(t, A17[:, i], label="d12 = -0.3, d21 = 0.2")
+    plt.plot(t, A18[:, i], label="d12 = -0.5, d21 = 0.2")
+    plt.xlabel('time')
+    plt.ylabel(parameters[i])
+    plt.title(f"Time vs. {parameters[i]}")
+    plt.legend()
+    plt.show()
+
+
+# %%
