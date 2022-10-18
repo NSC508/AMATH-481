@@ -249,9 +249,6 @@ for i in range(len(d12_d21_pairs)):
         A17 = sol.y.T
     elif i == 4:
         A18 = sol.y.T
-
-# %% 
-print(A14.shape)
 # %%
 # Presentation mastery
 
@@ -269,6 +266,4 @@ for i in range(4):
     plt.title(f"Time vs. ${parameters[i]}$")
     plt.legend()
     plt.show()
-
-
-# %%
+    
