@@ -265,7 +265,7 @@ for i in range(4):
     plt.plot(t, A17[:, i], label="d12 = -0.3, d21 = 0.2")
     plt.plot(t, A18[:, i], label="d12 = -0.5, d21 = 0.2")
     plt.xlabel('time')
-    plt.ylabel(parameters[i])
+    plt.ylabel(f"${parameters[i]}$")
     plt.title(f"Time vs. ${parameters[i]}$")
     plt.legend()
     plt.show()
