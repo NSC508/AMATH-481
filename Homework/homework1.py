@@ -204,8 +204,23 @@ t_last = 100
 d12_d21_pairs = [(0, 0), (0, 0,2), (-0.1, 0.2), (-0.3, 0.2), (-0.5, 0.2)]
 dt = 0.5
 
-dv1dt = lambda v_1, w_1, v_2 = -1 * (v_1)**3 + (1 + a_1) * (v_1)**2 - a_1 * v_1 - w_1 + I + d_12 * v_2
-dw1dt = lambda v_1, w_1 = b * v_1 - c * w_1
-dv2dt = lambda v_2, w_2, v_1 = -1 * (v_2)**3 + (1 + a_2) * (v_2)**2 - a_2 * v_2 - w_2 + I + d_21 * v_1
-dw2dt = lambda v_2, w_2 = b * v_2 - c * w_2
+def neuron_couple(w, t, p):
+    """
+    Defines the differential equations for the coupled spring-mass system.
 
+    Arguments:
+        w :  vector of the state variables:
+                  w = [v1,w1,v2,w2]
+        t :  time
+        p :  vector of the parameters:
+                  p = [m1,m2,k1,k2,L1,L2,b1,b2]
+    """
+    v_1, w_1, v_2, w_2 = w
+    m1, m2, k1, k2, L1, L2, b1, b2 = p
+
+    # Create f = (v1',w1',v2',w2'):
+    f = [-1 * (v_1)**3 + (1 + a_1) * (v_1)**2 - a_1 * v_1 - w_1 + I + d_12 * v_2,
+         b * v_1 - c * w_1,
+         -1 * (v_2)**3 + (1 + a_2) * (v_2)**2 - a_2 * v_2 - w_2 + I + d_21 * v_1,
+         b * v_2 - c * w_2]
+    return f
