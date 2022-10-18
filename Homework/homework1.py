@@ -257,7 +257,7 @@ print(A14.shape)
 
 # Plot the solution for each of the five matrices for time vs parameter (v1, w1, v2, w2) in 4 different plots
 
-parameters = ["v1", "w1", "v2", "w2"]
+parameters = ["v_1", "w_1", "v_2", "w_2"]
 for i in range(4):
     plt.plot(t, A14[:, i], label="d12 = 0, d21 = 0")
     plt.plot(t, A15[:, i], label="d12 = 0, d21 = 0.2")
@@ -266,7 +266,7 @@ for i in range(4):
     plt.plot(t, A18[:, i], label="d12 = -0.5, d21 = 0.2")
     plt.xlabel('time')
     plt.ylabel(parameters[i])
-    plt.title(f"Time vs. {parameters[i]}")
+    plt.title(f"Time vs. ${parameters[i]}$")
     plt.legend()
     plt.show()
 
