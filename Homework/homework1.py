@@ -216,7 +216,7 @@ def neuron_couple(w, t, p):
                   p = [m1,m2,k1,k2,L1,L2,b1,b2]
     """
     v_1, w_1, v_2, w_2 = w
-    m1, m2, k1, k2, L1, L2, b1, b2 = p
+    a_1, a_2, b, c, I, d_12, d_21 = p
 
     # Create f = (v1',w1',v2',w2'):
     f = [-1 * (v_1)**3 + (1 + a_1) * (v_1)**2 - a_1 * v_1 - w_1 + I + d_12 * v_2,
@@ -224,3 +224,15 @@ def neuron_couple(w, t, p):
          -1 * (v_2)**3 + (1 + a_2) * (v_2)**2 - a_2 * v_2 - w_2 + I + d_21 * v_1,
          b * v_2 - c * w_2]
     return f
+
+# %% 
+for pair in d12_d21_pairs:
+    d12 = pair[0]
+    d21 = pair[1]
+    p = [a_1, a_2, b, c, I, d12, d21]
+    w0 = [v1_initial, w1_initial, v2_initial, w2_initial]
+    t = np.arange(0, t_last + dt, dt)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = w0, method=method, args=(p,))
+    T = sol.t
+    Y = sol.y
+    
