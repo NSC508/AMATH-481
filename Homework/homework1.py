@@ -156,6 +156,37 @@ for i in range(len(epsilons)):
 
 # %%
 # Question 2B
+methods = ["RK45", "RK23", "BDF"]
+tolerances = np.arange(4, 11)
+tolerances = 10 ** tolerances
+tolerances = 1 / tolerances
+epsilon = 1
+y_initial = 2
+dydt_initial = np.pi**2
+slopes = []
+for method in methods:
+    dt_avg = []
+    for tol in tolerances:
+        sol = scipy.integrate.solve_ivp(fun = vdp_derivatives, t_span=[t[0], t[-1]], y0 = [y_initial, dydt_initial], method=method, rtol=tol, atol=tol)
+        T = sol.t
+        Y = sol.y
+        dt = np.mean(T)
+        dt_avg.append(dt)
+    #plot log(dt_avg) on x axis vs log(tolerances) on y axis. Use polyfit to find the slope of the line of best fit.
+    plt.loglog(dt_avg, tolerances, 'o')
+    a, b = np.polyfit(np.log(dt_avg), np.log(tolerances), 1)
+    plt.loglog(dt_avg, np.exp(b) * dt_avg ** a, label=f"line of best fit for {method}")
+    plt.xlabel('dt_avg')
+    plt.ylabel('tolerances')
+    plt.title(f"{method} $\Delta$t average vs. Tolerance")
+    plt.legend()
+    plt.show()
+    # save the slope of the line of best fit for each methdod as A11-A13 respectively
+    slopes.append(a)
+A11 = slopes[0]
+A12 = slopes[1]
+A13 = slopes[2]
+
 
 # %%
 # Question 3
