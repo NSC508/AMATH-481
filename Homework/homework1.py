@@ -267,3 +267,4 @@ for i in range(4):
     plt.legend()
     plt.show()
     
+# %%
