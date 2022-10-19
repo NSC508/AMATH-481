@@ -30,7 +30,9 @@ for i in dt:
     error_vals.append(error)
     if i == (1 / (2 ** 8)):
         A1 = res
-    
+
+# Cast A1 to a numpy array
+A1 = np.array(A1)
 #plot log of dt vs log of error with title "Forward Euler Error" and np.polyfit for line of best fit
 plt.loglog(dt, error_vals, 'o')
 a, b = np.polyfit(np.log(dt), np.log(error_vals), 1)
@@ -67,6 +69,8 @@ for i in dt:
     if i == (1 / (2 ** 8)):
         A4 = res
 
+# Cast A4 to a numpy array
+A4 = np.array(A4)
 #plot log of dt vs log of error with title "Huen's Method Error" and np.polyfit for line of best fit
 plt.loglog(dt, error_vals, 'o')
 a, b = np.polyfit(np.log(dt), np.log(error_vals), 1)
@@ -105,6 +109,8 @@ for i in dt:
     if i == (1 / (2 ** 8)):
         A7 = res
 
+# Cast A7 to a numpy array
+A7 = np.array(A7)
 # Store error values as a row vector named A8
 A8 = np.array(error_vals)
 
@@ -210,23 +216,23 @@ def neuron_couple(t, w, p):
 
     Arguments:
         w :  vector of the state variables:
-                  w = [v1,w1,v2,w2]
+                  w = [v1,v2,w1,w2]
         t :  time
         p :  vector of the parameters:
-                  p = [m1,m2,k1,k2,L1,L2,b1,b2]
+                  p = [a_1, a_2, b, c, I, d_12, d_21]
     """
-    v_1, w_1, v_2, w_2 = w
+    v_1, v_2, w_1, w_2 = w
     a_1, a_2, b, c, I, d_12, d_21 = p
 
     # Create f = (v1',w1',v2',w2'):
     f = [-1 * (v_1)**3 + (1 + a_1) * (v_1)**2 - a_1 * v_1 - w_1 + I + d_12 * v_2,
-         b * v_1 - c * w_1,
          -1 * (v_2)**3 + (1 + a_2) * (v_2)**2 - a_2 * v_2 - w_2 + I + d_21 * v_1,
+         b * v_1 - c * w_1,
          b * v_2 - c * w_2]
     return f
 
 # %% 
-# Save the result of computed of the values in a 201 x 4 matrix of form [v1, w1, v2, w2]
+# Save the result of computed of the values in a 201 x 4 matrix of form [v1, v2, w1, w2]
 # Save each of the five matrices as A14-A18 respectively
 A14 = np.zeros((201, 4))
 A15 = np.zeros((201, 4))
@@ -238,7 +244,7 @@ for i in range(len(d12_d21_pairs)):
     d21 = d12_d21_pairs[i][1]
     p = [a_1, a_2, b, c, I, d12, d21]
     t = np.arange(0, t_last + dt, dt)
-    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, w1_initial, v2_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v1_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
     if i == 0:
         A14 = sol.y.T
     elif i == 1:
@@ -254,7 +260,7 @@ for i in range(len(d12_d21_pairs)):
 
 # Plot the solution for each of the five matrices for time vs parameter (v1, w1, v2, w2) in 4 different plots
 
-parameters = ["v_1", "w_1", "v_2", "w_2"]
+parameters = ["v_1", "v_1", "w_1", "w_2"]
 for i in range(4):
     plt.plot(t, A14[:, i], label="d12 = 0, d21 = 0")
     plt.plot(t, A15[:, i], label="d12 = 0, d21 = 0.2")
@@ -267,3 +273,4 @@ for i in range(4):
     plt.legend()
     plt.show()
     
+# %%
