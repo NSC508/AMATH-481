@@ -1,7 +1,7 @@
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy
+import scipy.integrate
 # %%
 #Question 1 constants 
 dydt = lambda y, t: -3 * y * np.sin(t)
@@ -31,8 +31,9 @@ for i in dt:
     if i == (1 / (2 ** 8)):
         A1 = res
 
-# Cast A1 to a numpy array
+# Cast A1 to a column vector in numpy
 A1 = np.array(A1)
+A1 = A1.reshape(len(A1), 1)
 #plot log of dt vs log of error with title "Forward Euler Error" and np.polyfit for line of best fit
 plt.loglog(dt, error_vals, 'o')
 a, b = np.polyfit(np.log(dt), np.log(error_vals), 1)
@@ -45,6 +46,7 @@ plt.show()
 
 # Store error values as a row vector named A2
 A2 = np.array(error_vals)
+A2 = A2.reshape(1, len(A2))
 
 # Store the slope of the line of best fit as a scalar named A3
 A3 = a
@@ -69,8 +71,10 @@ for i in dt:
     if i == (1 / (2 ** 8)):
         A4 = res
 
-# Cast A4 to a numpy array
+# Cast A4 to a column vector in numpy
 A4 = np.array(A4)
+A4 = A4.reshape(len(A4), 1)
+
 #plot log of dt vs log of error with title "Huen's Method Error" and np.polyfit for line of best fit
 plt.loglog(dt, error_vals, 'o')
 a, b = np.polyfit(np.log(dt), np.log(error_vals), 1)
@@ -83,6 +87,7 @@ plt.show()
 
 # Store error values as a row vector named A5
 A5 = np.array(error_vals)
+A5 = A5.reshape(1, len(A5))
 
 # Store the slope of the line of best fit as a scalar named A6
 A6 = a
@@ -95,8 +100,8 @@ def adams_predictor_corrector(dydt, y0, dt):
     y[0] = y0
     y[1] = y[0] + dt * dydt(y[0] + dt/2 * dydt(y[0], t[0]), t[0] + dt/2)
     for i in range(2, len(t)):
-        yp = y[i] + dt/2 * (3 * dydt(y[i], t[i]) - dydt(y[i-1], t[i-1]))
-        y[i] = y[i] + dt/2 * (dydt(yp, t[i] + dt) + dydt(y[i], t[i]))
+        yp = y[i - 1] + (dt/2) * ((3 * dydt(y[i - 1], t[i - 1])) - (dydt(y[i - 2], t[i -2])))
+        y[i] = y[i - 1] + dt/2 * (dydt(yp, t[i - 1] + dt) + dydt(y[i - 1], t[i - 1]))
     return y
 
 error_vals = []
@@ -109,10 +114,14 @@ for i in dt:
     if i == (1 / (2 ** 8)):
         A7 = res
 
-# Cast A7 to a numpy array
+
+# Cast A7 to a column vector in numpy
 A7 = np.array(A7)
+A7 = A7.reshape(len(A7), 1)
+
 # Store error values as a row vector named A8
 A8 = np.array(error_vals)
+A8 = A8.reshape(1, len(A8))
 
 # Store the slope of the line of best fit as a scalar named A9
 A9 = a
@@ -122,20 +131,20 @@ A9 = a
 # Plot log(E) vs log(dt) for all three methods on the same plot. Include lines with slope n where n is the order of the method.
 
 #plot log of dt vs log of error with title "All Methods Error" and np.polyfit for line of best fit
-plt.loglog(dt, A2, 'o', label="Forward Euler")
-plt.loglog(dt, A5, 'o', label="Huen's Method")
-plt.loglog(dt, A8, 'o', label="Adams Predictor Corrector")
-a, b = np.polyfit(np.log(dt), np.log(A2), 1)
-plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Forward Euler")
-a, b = np.polyfit(np.log(dt), np.log(A5), 1)
-plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Huen's Method")
-a, b = np.polyfit(np.log(dt), np.log(A8), 1)
-plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Adams Predictor Corrector")
-plt.xlabel('dt')
-plt.ylabel('error')
-plt.title("All Methods Error")
-plt.legend()
-plt.show()
+# plt.loglog(dt, A2, 'o', label="Forward Euler")
+# plt.loglog(dt, A5, 'o', label="Huen's Method")
+# plt.loglog(dt, A8, 'o', label="Adams Predictor Corrector")
+# a, b = np.polyfit(np.log(dt), np.log(A2), 1)
+# plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Forward Euler")
+# a, b = np.polyfit(np.log(dt), np.log(A5), 1)
+# plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Huen's Method")
+# a, b = np.polyfit(np.log(dt), np.log(A8), 1)
+# plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Adams Predictor Corrector")
+# plt.xlabel('dt')
+# plt.ylabel('error')
+# plt.title("All Methods Error")
+# plt.legend()
+# plt.show()
 
 # %%
 # Question 2 constants
@@ -168,7 +177,7 @@ tolerances = 10 ** tolerances
 tolerances = 1 / tolerances
 epsilon = 1
 y_initial = 2
-dydt_initial = np.pi**2
+dydt_initial = np.pi ** 2
 slopes = []
 for method in methods:
     dt_avg = []
@@ -176,7 +185,7 @@ for method in methods:
         sol = scipy.integrate.solve_ivp(fun = vdp_derivatives, t_span=[t[0], t[-1]], y0 = [y_initial, dydt_initial], method=method, rtol=tol, atol=tol)
         T = sol.t
         Y = sol.y
-        dt = np.mean(T)
+        dt = np.mean(np.diff(T))
         dt_avg.append(dt)
     #plot log(dt_avg) on x axis vs log(tolerances) on y axis. Use polyfit to find the slope of the line of best fit.
     plt.loglog(dt_avg, tolerances, 'o')
@@ -197,7 +206,7 @@ A13 = slopes[2]
 # %%
 # Question 3 Constants
 a_1 = 0.05
-a_2 = 0.24
+a_2 = 0.25
 b = 0.1 
 c = 0.1 
 I = 0.1
@@ -207,7 +216,7 @@ w1_initial = 0
 w2_initial = 0
 method = "BDF"
 t_last = 100
-d12_d21_pairs = [(0, 0), (0, 0,2), (-0.1, 0.2), (-0.3, 0.2), (-0.5, 0.2)]
+d12_d21_pairs = [(0, 0), (0, 0.2), (-0.1, 0.2), (-0.3, 0.2), (-0.5, 0.2)]
 dt = 0.5
 
 def neuron_couple(t, w, p):
@@ -224,7 +233,7 @@ def neuron_couple(t, w, p):
     v_1, v_2, w_1, w_2 = w
     a_1, a_2, b, c, I, d_12, d_21 = p
 
-    # Create f = (v1',w1',v2',w2'):
+    # Create f = (v1',v2',w1',w2'):
     f = [-1 * (v_1)**3 + (1 + a_1) * (v_1)**2 - a_1 * v_1 - w_1 + I + d_12 * v_2,
          -1 * (v_2)**3 + (1 + a_2) * (v_2)**2 - a_2 * v_2 - w_2 + I + d_21 * v_1,
          b * v_1 - c * w_1,
