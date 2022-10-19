@@ -244,7 +244,7 @@ for i in range(len(d12_d21_pairs)):
     d21 = d12_d21_pairs[i][1]
     p = [a_1, a_2, b, c, I, d12, d21]
     t = np.arange(0, t_last + dt, dt)
-    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v1_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v2_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
     if i == 0:
         A14 = sol.y.T
     elif i == 1:
@@ -258,9 +258,9 @@ for i in range(len(d12_d21_pairs)):
 # %%
 # Presentation mastery
 
-# Plot the solution for each of the five matrices for time vs parameter (v1, w1, v2, w2) in 4 different plots
+# Plot the solution for each of the five matrices for time vs parameter (v1, v2, w1, w2) in 4 different plots
 
-parameters = ["v_1", "v_1", "w_1", "w_2"]
+parameters = ["v_1", "v_2", "w_1", "w_2"]
 for i in range(4):
     plt.plot(t, A14[:, i], label="d12 = 0, d21 = 0")
     plt.plot(t, A15[:, i], label="d12 = 0, d21 = 0.2")
