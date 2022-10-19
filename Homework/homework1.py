@@ -123,6 +123,9 @@ A7 = A7.reshape(len(A7), 1)
 A8 = np.array(error_vals)
 A8 = A8.reshape(1, len(A8))
 
+#calculate the slope of the line of best fit
+a, b = np.polyfit(np.log(dt), np.log(error_vals), 1)
+
 # Store the slope of the line of best fit as a scalar named A9
 A9 = a
 
