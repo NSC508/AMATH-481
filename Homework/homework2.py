@@ -36,7 +36,7 @@ for modes in range(5): # Try to find 5 modes
 
     
     for j in range(1000):
-        x_evals = np.linspace(-L, L, 20 * L + 1)
+        x_evals, step_size = np.linspace(-L, L, 20 * L + 1, retstep = True)
         sol = scipy.integrate.solve_ivp(lambda x,y: rhsfunc(x, y, epsilon), xp, y0, t_eval = x_evals)
         y_sol = sol.y[0, :]
         y_prime_sol = sol.y[1, :]
@@ -64,23 +64,20 @@ for modes in range(5): # Try to find 5 modes
     A1_through_A5.append(y_sol)
 # %%
 # Question 2
-h = 8 / 81
+h = step_size
 arr_size = 81
 D = -1/(h**2) * np.ones(arr_size)
-U = 2/(h**2) * np.ones(arr_size - 1)
+U = 2/(h**2) * np.ones(arr_size - 1) 
+for i in range(U.size):
+    U[i] = U[i] + (-L + ((i+1) * h))**2
 L = -1/(h**2) * np.ones(arr_size - 2)
 A = np.diag(D) + np.diag(U, k=1) + np.diag(L, k=2)
-#iterate through A and add (row**2)/3*(h**2) to each element in the row unless the element is 0
-for i in range(len(A)):
-    for j in range(len(A[i])):
-        if A[i][j] != 0:
-            A[i][j] = A[i][j] + ((i + 1)**2)/3*(h**2)
 
-row_zero = np.zeros(81)
+row_zero = np.zeros(arr_size)
 row_zero[1] = 4/3
 row_zero[2] = -1/3
 
-row_N = np.zeros(81)
+row_N = np.zeros(arr_size)
 row_N[-2] = 4/3
 row_N[-3] = -1/3
 
@@ -93,6 +90,7 @@ A = np.delete(A, -1, 0)
 #replace the last row of A with row_N
 A[-1] = row_N
 
+print(A)
 #Get the eigenvalues and eigenvectors of A
 eigenvalues, eigenvectors = np.linalg.eig(A)
 
@@ -101,10 +99,16 @@ idx = eigenvalues.argsort()[::1]
 eigenvalues = eigenvalues[idx]
 eigenvectors = eigenvectors[:,idx]
 
-#plot the eigenfunctions on the same plot
-for i in range(6):
-    plt.plot(eigenvectors[:,i], label=f"Eigenfunction {i}")
-plt.show()
+#Save the first 5 eigenvectors to variables A7 through A11
+A7 = eigenvectors[:,0]
+A8 = eigenvectors[:,1]
+A9 = eigenvectors[:,2]
+A10 = eigenvectors[:,3]
+A11 = eigenvectors[:,4]
+
+#Save the first 5 eigenvalue as the variables A12
+A12 = eigenvalues[0:5]
+
 
 
 # %%
