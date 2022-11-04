@@ -21,11 +21,6 @@ def rhsfunc(x, y, epsilon):
 A = 1 # This is the shooting-method parameter that we will change
 epsilon_start = 0 # This is our initial beta value, we will change it.
 
-initial_condition_one = np.sqrt(L**2 - epsilon_start)
-y0 = np.array([initial_condition_one, A])
-
-
-
 A1_through_A5 = []
 A6 = []
 # Make a loop over beta values to find more eigenvalue-eigenfunction pairs
@@ -37,6 +32,8 @@ for modes in range(5): # Try to find 5 modes
     
     for j in range(1000):
         x_evals, step_size = np.linspace(-L, L, 20 * L + 1, retstep = True)
+        initial_condition_one = np.sqrt(L**2 - epsilon_start)
+        y0 = np.array([initial_condition_one, A])
         sol = scipy.integrate.solve_ivp(lambda x,y: rhsfunc(x, y, epsilon), xp, y0, t_eval = x_evals)
         y_sol = sol.y[0, :]
         y_prime_sol = sol.y[1, :]
@@ -90,7 +87,6 @@ A = np.delete(A, -1, 0)
 #replace the last row of A with row_N
 A[-1] = row_N
 
-print(A)
 #Get the eigenvalues and eigenvectors of A
 eigenvalues, eigenvectors = np.linalg.eig(A)
 
@@ -109,9 +105,23 @@ A11 = eigenvectors[:,4]
 #Save the first 5 eigenvalue as the variables A12
 A12 = eigenvalues[0:5]
 
+print(A7)
+
 # %%
 # Question 3
 gamma = [0.05, -0.05]
+tol = 1e-5
+L = 3
+xp = [-L, L]
+x_evals, step_size = np.linspace(-L, L, 20 * L + 1, retstep = True)
+A = 1
+n = lambda x: x**2
+
+#Define the ODE
+def rhsfunc(x, y, epsilon, gamma):
+    f1 = y[1]
+    f2 = (n(x) - epsilon) * y[0]
+    return np.array([f1, f2])
 
 # for loop over two modes
 #    for loop for shooting
@@ -133,3 +143,44 @@ gamma = [0.05, -0.05]
 
 #    epsilon_start = epsilon + 0.1
 #    A remains the same
+
+for gam in gamma:
+    epsilon_start = 0
+    for modes in range(2):
+        epsilon = epsilon_start
+        depsilon = n(-L) / 100
+        for j in range(1000):
+            initial_condition_one = np.sqrt(L**2 - epsilon) * A
+            y0 = np.array([initial_condition_one, A])
+            sol = scipy.integrate.solve_ivp(lambda x,y: rhsfunc(x, y, epsilon, gam), xp, y0, t_eval = x_evals)
+            y_sol = sol.y[0, :]
+            y_prime_sol = sol.y[1, :]
+            right_endpoint_derivative = -np.sqrt(L**2 - epsilon) * y_sol[-1]
+            norm = scipy.integrate.trapz(y_sol**2, x_evals)
+            if np.abs(y_prime_sol[-1] - right_endpoint_derivative)<tol and np.abs(norm - 1) < tol:
+                print(f"We got the eigenvalue! epsilon = {epsilon}")
+                break
+            else:
+                A = A / np.sqrt(norm)
+            
+            y0 = np.array([initial_condition_one, A])
+            sol = scipy.integrate.solve_ivp(lambda x,y: rhsfunc(x, y, epsilon, gam), xp, y0, t_eval = x_evals)
+            y_sol = sol.y[0, :]
+            y_prime_sol = sol.y[1, :]
+            right_endpoint_derivative = -np.sqrt(L**2 - epsilon) * y_sol[-1]
+            norm = scipy.integrate.trapz(y_sol**2, x_evals)
+            if np.abs(y_prime_sol[-1] - right_endpoint_derivative)<tol and np.abs(norm - 1) < tol:
+                print(f"We got the eigenvalue! epsilon = {epsilon}")
+                break
+            else:
+                if (-1)**(modes)*(y_prime_sol[-1] - right_endpoint_derivative) > 0: 
+                    epsilon = epsilon + depsilon
+                else:
+                    epsilon = epsilon - depsilon/2 
+                    depsilon = depsilon/2
+            
+        epsilon_start = epsilon + 0.1 # increase beta once we have found one mode.
+        plt.plot(sol.t, y_sol, linewidth=2)
+        plt.plot(sol.t, 0*sol.t, 'k')
+
+# %%
