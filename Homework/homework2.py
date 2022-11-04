@@ -109,6 +109,27 @@ A11 = eigenvectors[:,4]
 #Save the first 5 eigenvalue as the variables A12
 A12 = eigenvalues[0:5]
 
-
-
 # %%
+# Question 3
+gamma = [0.05, -0.05]
+
+# for loop over two modes
+#    for loop for shooting
+#       update initial condition
+#       solve ODE
+#       compute norm and boundary condition
+#       if norm and boundary condition met
+#          break
+#       else
+#          A = A/sqrt(norm)
+      
+#       update initial condition with new A
+#       solve ODE
+#       compute norm and boundary condition
+#       if norm and boundary condition met
+#          break
+#       else
+#          change epsilon accordingly
+
+#    epsilon_start = epsilon + 0.1
+#    A remains the same
