@@ -48,6 +48,7 @@ plt.show()
 A2 = np.array(error_vals)
 A2 = A2.reshape(1, len(A2))
 
+A2_error_vals = error_vals
 # Store the slope of the line of best fit as a scalar named A3
 A3 = a
 
@@ -89,6 +90,7 @@ plt.show()
 A5 = np.array(error_vals)
 A5 = A5.reshape(1, len(A5))
 
+A5_error_vals = error_vals
 # Store the slope of the line of best fit as a scalar named A6
 A6 = a
 
@@ -123,6 +125,7 @@ A7 = A7.reshape(len(A7), 1)
 A8 = np.array(error_vals)
 A8 = A8.reshape(1, len(A8))
 
+A8_error_vals = error_vals
 #calculate the slope of the line of best fit
 a, b = np.polyfit(np.log(dt), np.log(error_vals), 1)
 
@@ -131,23 +134,24 @@ A9 = a
 
 # %%
 # Presentation Mastery
-# Plot log(E) vs log(dt) for all three methods on the same plot. Include lines with slope n where n is the order of the method.
+# Plot log(E) vs log(dt) for all three methods on the same plot. Include lines with slope n where n is the order of accuracy of the method.
 
-#plot log of dt vs log of error with title "All Methods Error" and np.polyfit for line of best fit
-# plt.loglog(dt, A2, 'o', label="Forward Euler")
-# plt.loglog(dt, A5, 'o', label="Huen's Method")
-# plt.loglog(dt, A8, 'o', label="Adams Predictor Corrector")
-# a, b = np.polyfit(np.log(dt), np.log(A2), 1)
-# plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Forward Euler")
-# a, b = np.polyfit(np.log(dt), np.log(A5), 1)
-# plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Huen's Method")
-# a, b = np.polyfit(np.log(dt), np.log(A8), 1)
-# plt.loglog(dt, np.exp(b) * dt ** a, label=f"line of best fit for Adams Predictor Corrector")
-# plt.xlabel('dt')
-# plt.ylabel('error')
-# plt.title("All Methods Error")
-# plt.legend()
-# plt.show()
+# Order of accuracy for forward euler is (dt**1)
+# Order of accuracy for huen's method is (dt**2)
+# Order of accuracy for adams predictor corrector is (dt**4)
+# Move the order of accuracy lines so that the first point is at the first point of its respective method's error values
+
+plt.loglog(dt, A2_error_vals, 'o', label='Forward Euler')
+plt.loglog(dt, A5_error_vals, 'o', label="Huen's Method")
+plt.loglog(dt, A8_error_vals, 'o', label='Adams Predictor Corrector')
+plt.loglog(dt, np.exp(b) * dt ** 1 * np.exp(A2_error_vals[0]), label=f"line of best fit for Forward Euler")
+plt.loglog(dt, np.exp(b) * dt ** 2, label=f"line of best fit for Huen's Method")
+plt.loglog(dt, np.exp(b) * dt ** 4, label=f"line of best fit for Adams Predictor Corrector")
+plt.xlabel('dt')
+plt.ylabel('error')
+plt.title('Error vs dt')
+plt.legend()
+plt.show()
 
 # %%
 # Question 2 constants
@@ -270,19 +274,127 @@ for i in range(len(d12_d21_pairs)):
 # %%
 # Presentation mastery
 
-# Plot the solution for each of the five matrices for time vs parameter (v1, v2, w1, w2) in 4 different plots
+# Plot the effect of each of the hyperpameters (a_1, a_2, b, c, I) on the final values of the variables v1, v2, w1, w2
+        
+# a_1
+a_1s = np.arange(0, 1, 0.01)
+v1_finals = []
+v2_finals = []
+w1_finals = []
+w2_finals = []
+for a_1 in a_1s:
+    p = [a_1, a_2, b, c, I, d12, d21]
+    t = np.arange(0, t_last + dt, dt)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v2_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    v1_finals.append(sol.y[0, -1])
+    v2_finals.append(sol.y[1, -1])
+    w1_finals.append(sol.y[2, -1])
+    w2_finals.append(sol.y[3, -1])
+plt.plot(a_1s, v1_finals, label="v1")
+plt.plot(a_1s, v2_finals, label="v2")
+plt.plot(a_1s, w1_finals, label="w1")
+plt.plot(a_1s, w2_finals, label="w2")
+plt.xlabel("a_1")
+plt.ylabel("Final Value")
+plt.title("Effect of a_1 on Final Values")
+plt.legend()
+plt.show()
 
-parameters = ["v_1", "v_2", "w_1", "w_2"]
-for i in range(4):
-    plt.plot(t, A14[:, i], label="d12 = 0, d21 = 0")
-    plt.plot(t, A15[:, i], label="d12 = 0, d21 = 0.2")
-    plt.plot(t, A16[:, i], label="d12 = -0.1, d21 = 0.2")
-    plt.plot(t, A17[:, i], label="d12 = -0.3, d21 = 0.2")
-    plt.plot(t, A18[:, i], label="d12 = -0.5, d21 = 0.2")
-    plt.xlabel('time')
-    plt.ylabel(f"${parameters[i]}$")
-    plt.title(f"Time vs. ${parameters[i]}$")
-    plt.legend()
-    plt.show()
+# a_2
+a_2s = np.arange(0, 1, 0.01)
+v1_finals = []
+v2_finals = []
+w1_finals = []
+w2_finals = []
+for a_2 in a_2s:
+    p = [a_1, a_2, b, c, I, d12, d21]
+    t = np.arange(0, t_last + dt, dt)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v2_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    v1_finals.append(sol.y[0, -1])
+    v2_finals.append(sol.y[1, -1])
+    w1_finals.append(sol.y[2, -1])
+    w2_finals.append(sol.y[3, -1])
+plt.plot(a_2s, v1_finals, label="v1")
+plt.plot(a_2s, v2_finals, label="v2")
+plt.plot(a_2s, w1_finals, label="w1")
+plt.plot(a_2s, w2_finals, label="w2")
+plt.xlabel("a_2")
+plt.ylabel("Final Value")
+plt.title("Effect of a_2 on Final Values")
+plt.legend()
+plt.show()
+
+# b
+bs = np.arange(0, 1, 0.01)
+v1_finals = []
+v2_finals = []
+w1_finals = []
+w2_finals = []
+for b in bs:
+    p = [a_1, a_2, b, c, I, d12, d21]
+    t = np.arange(0, t_last + dt, dt)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v2_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    v1_finals.append(sol.y[0, -1])
+    v2_finals.append(sol.y[1, -1])
+    w1_finals.append(sol.y[2, -1])
+    w2_finals.append(sol.y[3, -1])
+plt.plot(bs, v1_finals, label="v1")
+plt.plot(bs, v2_finals, label="v2")
+plt.plot(bs, w1_finals, label="w1")
+plt.plot(bs, w2_finals, label="w2")
+plt.xlabel("b")
+plt.ylabel("Final Value")
+plt.title("Effect of b on Final Values")
+plt.legend()
+plt.show()
+
+# c
+cs = np.arange(0, 1, 0.01)
+v1_finals = []
+v2_finals = []
+w1_finals = []
+w2_finals = []
+for c in cs:
+    p = [a_1, a_2, b, c, I, d12, d21]
+    t = np.arange(0, t_last + dt, dt)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v2_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    v1_finals.append(sol.y[0, -1])
+    v2_finals.append(sol.y[1, -1])
+    w1_finals.append(sol.y[2, -1])
+    w2_finals.append(sol.y[3, -1])
+plt.plot(cs, v1_finals, label="v1")
+plt.plot(cs, v2_finals, label="v2")
+plt.plot(cs, w1_finals, label="w1")
+plt.plot(cs, w2_finals, label="w2")
+plt.xlabel("c")
+plt.ylabel("Final Value")
+plt.title("Effect of c on Final Values")
+plt.legend()
+plt.show()
+
+# I
+Is = np.arange(0, 1, 0.01)
+v1_finals = []
+v2_finals = []
+w1_finals = []
+w2_finals = []
+for I in Is:
+    p = [a_1, a_2, b, c, I, d12, d21]
+    t = np.arange(0, t_last + dt, dt)
+    sol = scipy.integrate.solve_ivp(fun = neuron_couple, t_span=[t[0], t[-1]], y0 = [v1_initial, v2_initial, w1_initial, w2_initial], method=method, args=(p,), t_eval=t)
+    v1_finals.append(sol.y[0, -1])
+    v2_finals.append(sol.y[1, -1])
+    w1_finals.append(sol.y[2, -1])
+    w2_finals.append(sol.y[3, -1])
+plt.plot(Is, v1_finals, label="v1")
+plt.plot(Is, v2_finals, label="v2")
+plt.plot(Is, w1_finals, label="w1")
+plt.plot(Is, w2_finals, label="w2")
+plt.xlabel("I")
+plt.ylabel("Final Value")
+plt.title("Effect of I on Final Values")
+plt.legend()
+plt.show()
+
     
 # %%
