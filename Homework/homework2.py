@@ -118,9 +118,9 @@ A = 1
 n = lambda x: x**2
 
 #Define the ODE
-def rhsfunc(x, y, epsilon, gamma):
+def rhsfunc(x, y, epsilon, g):
     f1 = y[1]
-    f2 = (n(x) - epsilon) * y[0]
+    f2 = (gamma * y[0]**2 + n(x) - epsilon) * y[0]
     return np.array([f1, f2])
 
 # for loop over two modes
