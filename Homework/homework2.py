@@ -88,6 +88,10 @@ U = -1/(h**2) * np.ones(arr_size - 1)
 L = -1/(h**2) * np.ones(arr_size - 1)
 A = np.diag(D) + np.diag(U, k=1) + np.diag(L, k=-1)
 
+A[0, 0] = A[0, 0] + ((-1/h**2) * (4/3))
+A[0, 1] = A[0, 1] + ((-1/h**2) * (-1/3)) 
+A[-1, -1] = A[-1, -1] + ((-1/h**2) * (4/3)) 
+A[-1, -2] = A[-1, -2] + ((-1/h**2) * (-1/3)) 
 print(A)
 
 #Get the eigenvalues and eigenvectors of A
