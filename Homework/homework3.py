@@ -1,253 +1,158 @@
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.integrate
-# %%
-# Question 1 
+from scipy.integrate import solve_ivp
+from scipy.sparse import spdiags
+import scipy
+import numpy.matlib
+# %% 
+# Question 1 Common
+f = lambda x: np.exp(-(x-5)**2) # our inital condition
+L = 10 # our x boundary 
+term = 10 # solve until time t = T 
+N = 200 # the number of points in our x domain
+dt = (2 * L)/N # our x step size
+x = np.arange(-L, L, dt) # our x domain
 
-# Define some constants
-n = lambda x: x**2
-L = 4
-xp = [-L, L] # xspan, don't need to define stepsize
-tol = 1e-6 # We want to find beta such that |y(x=1)| < tol
+#Set up the matrix A 
+#it is a double-diagonal matrix with 1's on the lower and upper diagonals
+#and 0's on the main diagonal
+A = np.diag(1/(2*dt) * np.ones(N-1), k=-1) + np.diag(1/(2*dt) * np.ones(N-1), k=1)
+#Set the last value of the first row to 1/(2*dt)
+A[0, -1] = 1/(2*dt)
+#Set the first value of the last row to 1/(2*dt)
+A[-1, 0] = 1/(2*dt)
 
-# Define ODE
-def rhsfunc(x, y, epsilon):
-    f1 = y[1]
-    f2 = (n(x) - epsilon) * y[0]
-    return np.array([f1, f2])
+A = 0.5 * A # Because the PDE is 0.5u_x
 
-# Define our initial conditions
-A = 1 # This is the shooting-method parameter that we will change
-epsilon_start = 0 # This is our initial beta value, we will change it.
+y0 = f(x)
 
-A1_through_A5 = []
-A6 = []
-
-# Make a loop over beta values to find more eigenvalue-eigenfunction pairs
-for modes in range(5): # Try to find 5 modes
-    epsilon = epsilon_start 
-    depsilon = n(-L) / 100 # This is the amount we will decrease beta by each time we don't have an eigenvalue
-                 # until we get an eigenvalue
-    for j in range(1000):
-        x_evals, step_size = np.linspace(-L, L, 20 * L + 1, retstep = True)
-        initial_condition_one = np.sqrt(L**2 - epsilon)
-        y0 = np.array([1, initial_condition_one])
-        sol = scipy.integrate.solve_ivp(lambda x,y: rhsfunc(x, y, epsilon), xp, y0, t_eval = x_evals)
-        y_sol = sol.y[0, :]
-        y_prime_sol = sol.y[1, :]
-
-        right_endpoint_derivative = -np.sqrt(L**2 - epsilon) * y_sol[-1]
-        if np.abs(y_prime_sol[-1] - right_endpoint_derivative)<tol:
-            print(f"We got the eigenvalue! epsilon = {epsilon}")
-            # normalize the eigenfunction using the trapezoidal rule
-            norm = scipy.integrate.trapz(y_sol**2, x_evals)
-            y_sol = y_sol / np.sqrt(norm)
-            A6.append(epsilon)
-            A1_through_A5.append(np.abs(y_sol))
-            break
-
-        if (-1)**(modes)*(y_prime_sol[-1] - right_endpoint_derivative) > 0: 
-            epsilon = epsilon + depsilon
-        else:
-            epsilon = epsilon - depsilon/2 
-            depsilon = depsilon/2
-
-
-    epsilon_start = epsilon + 0.1 # increase beta once we have found one mode.
-
-    plt.plot(sol.t, np.abs(y_sol), linewidth=2)
-    plt.plot(sol.t, 0*sol.t, 'k')
-
-#Save the absolute value of the eigenvalues to variables A1 through A5 as column vectors
-A1 = A1_through_A5[0]
-A2 = A1_through_A5[1]
-A3 = A1_through_A5[2]
-A4 = A1_through_A5[3]
-A5 = A1_through_A5[4]
-
-#Cast A1 through A5 into column vectors
-A1 = A1.reshape(-1, 1)
-A2 = A2.reshape(-1, 1)
-A3 = A3.reshape(-1, 1)
-A4 = A4.reshape(-1, 1)
-A5 = A5.reshape(-1, 1)
-
-#Cast A6 into a row vector
-A6 = np.array(A6)
-A6 = A6.reshape(1, -1)
-
-# %%
-# Question 2
-h = step_size
-arr_size = 79
-D = 2/(h**2) * np.ones(arr_size) 
-for i in range(D.size):
-    D[i] = D[i] + (-L + ((i+1) * h))**2
-U = -1/(h**2) * np.ones(arr_size - 1)
-L = -1/(h**2) * np.ones(arr_size - 1)
-A = np.diag(D) + np.diag(U, k=1) + np.diag(L, k=-1)
-
-A[0, 0] = A[0, 0] + ((-1/h**2) * (4/3))
-A[0, 1] = A[0, 1] + ((-1/h**2) * (-1/3)) 
-A[-1, -1] = A[-1, -1] + ((-1/h**2) * (4/3)) 
-A[-1, -2] = A[-1, -2] + ((-1/h**2) * (-1/3)) 
 print(A)
 
-#Get the eigenvalues and eigenvectors of A
-eigenvalues, eigenvectors = np.linalg.eig(A)
-eigenvectors_final = np.zeros((81, 79))
-#loop over all the eigenvectors:
-for i in range(eigenvectors.shape[1]):
-    new_eigenvector = []
-    #get the 0th element as the (4 * first element of the eignvector - second element) / 3
-    y0 = (4 * eigenvectors[0, i] - eigenvectors[1, i]) / 3
-    #get the last element as the (4 * the last element of the eignvector - second to last element) / 3
-    y1 = (4 * eigenvectors[-1, i] - eigenvectors[-2, i]) / 3
-    #add y0 to the beginning of the eigenvector
-    new_eigenvector.append(y0)
-    #add the eigenvector to the new eigenvector
-    new_eigenvector.extend(eigenvectors[:, i])
-    #add y1 to the end of the eigenvector
-    new_eigenvector = np.append(new_eigenvector, y1)
-    #normalize the eigenvector
-    norm = scipy.integrate.trapz(np.power(new_eigenvector, 2), x_evals)
-    new_eigenvector = new_eigenvector / np.sqrt(norm)
-    #add the eigenvector to the list of eigenvectors as a column vector
-    eigenvectors_final[:, i] = new_eigenvector
-
-eigenvectors = np.array(eigenvectors_final)
-#sort the eigenvalues and eigenvectors
-idx = eigenvalues.argsort()[::1]
-eigenvalues = eigenvalues[idx]
-eigenvectors = eigenvectors[:,idx]
-
-for i in range(5):
-    plt.plot(np.arange(-4, 4 + h, h), eigenvectors[:, i], label = f"eigenvalue = {eigenvalues[i]}")
-    plt.plot(sol.t, 0*sol.t, 'k')
-    plt.legend()
-
-
-#Save the first 5 abolute values of the eigenvectors to variables A7 through A11
-A7 = np.abs(eigenvectors[:,0])
-A8 = np.abs(eigenvectors[:,1])
-A9 = np.abs(eigenvectors[:,2])
-A10 = np.abs(eigenvectors[:,3])
-A11 = np.abs(eigenvectors[:,4])
-
-# cast A7 through A11 as column vectors
-A7 = A7.reshape(-1, 1)
-A8 = A8.reshape(-1, 1)
-A9 = A9.reshape(-1, 1)
-A10 = A10.reshape(-1, 1)
-A11 = A11.reshape(-1, 1)
-
-#Save the first 5 eigenvalue as the variables A12
-A12 = eigenvalues[0:5]
-
-# Case A12 as a row vector
-A12 = A12.reshape(1, -1)
-
-print(A12)
 # %%
-# Question 3
-gamma = [0.05, -0.05]
-tol = 1e-5
-L = 3
-xp = [-L, L]
-x_evals, step_size = np.linspace(-L, L, 20 * L + 1, retstep = True)
-A = 0.001
-n = lambda x: x**2
+# Question 1 Part A
+def advectionPDE(t, x, A):
+   u_t = A @ x # u_t = 0.5 u_x
+   return u_t
 
-#Define the ODE
-def rhsfunc(x, y, epsilon, gamma):
-    f1 = y[1]
-    f2 = (gamma * y[0]**2 + n(x) - epsilon) * y[0]
-    return np.array([f1, f2])
+sol = solve_ivp(lambda t,x: advectionPDE(t, x, A), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
 
-# for loop over two modes
-#    for loop for shooting
-#       update initial condition
-#       solve ODE
-#       compute norm and boundary condition
-#       if norm and boundary condition met
-#          break
-#       else
-#          A = A/sqrt(norm)
-      
-#       update initial condition with new A
-#       solve ODE
-#       compute norm and boundary condition
-#       if norm and boundary condition met
-#          break
-#       else
-#          change epsilon accordingly
+# Create surface plot
+X, T = np.meshgrid(x,sol.t)
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"},figsize =(25, 10))
+surf = ax.plot_surface(X, T, sol.y.T,cmap='magma')
+ax.plot3D(x, 0*x, f(x),'-r',linewidth=5)
+plt.xlabel('x')
+plt.ylabel('time')
+# title = 'Advection PDE with c(t, x) = -0.5
+plt.title('Advection PDE with c(t, x) = -0.5')
+plt.show()
 
-#    epsilon_start = epsilon + 0.1
-#    A remains the same
+# %%
+# Question 1 Part B
 
-A13_A14_A16_A17 = []
-A15_A18 = []
-for gam in gamma:
-    epsilon_start = 0
-    for modes in range(2):
-        epsilon = epsilon_start
-        depsilon = n(-L) / 100
-        for j in range(1000):
-            initial_condition_one = np.sqrt(L**2 - epsilon) * A
-            y0 = np.array([A, initial_condition_one])
-            sol = scipy.integrate.solve_ivp(lambda x,y: rhsfunc(x, y, epsilon, gam), xp, y0, t_eval = x_evals)
-            y_sol = sol.y[0, :]
-            y_prime_sol = sol.y[1, :]
-            right_endpoint_derivative = -np.sqrt(L**2 - epsilon) * y_sol[-1]
-            norm = scipy.integrate.trapz(y_sol**2, x_evals)
-            if np.abs(y_prime_sol[-1] - right_endpoint_derivative)<tol and np.abs(norm - 1) < tol:
-                print(f"We got the eigenvalue! epsilon = {epsilon}")
-                break
-            else:
-                A = A / np.sqrt(norm)
-            
-            y0 = np.array([A, initial_condition_one])
-            sol = scipy.integrate.solve_ivp(lambda x,y: rhsfunc(x, y, epsilon, gam), xp, y0, t_eval = x_evals)
-            y_sol = sol.y[0, :]
-            y_prime_sol = sol.y[1, :]
-            right_endpoint_derivative = -np.sqrt(L**2 - epsilon) * y_sol[-1]
-            norm = scipy.integrate.trapz(y_sol**2, x_evals)
-            if np.abs(y_prime_sol[-1] - right_endpoint_derivative)<tol and np.abs(norm - 1) < tol:
-                print(f"We got the eigenvalue! epsilon = {epsilon}")
-                break
-            else:
-                if (-1)**(modes)*(y_prime_sol[-1] - right_endpoint_derivative) > 0: 
-                    epsilon = epsilon + depsilon
-                else:
-                    epsilon = epsilon - depsilon/2 
-                    depsilon = depsilon/2
-            
-        epsilon_start = epsilon + 0.1 # increase beta once we have found one mode.
-        plt.plot(sol.t, y_sol, linewidth=2)
-        plt.plot(sol.t, 0*sol.t, 'k')
-        A13_A14_A16_A17.append(y_sol)
-        A15_A18.append(epsilon)
+def advectionPDE(t, x, A):
+   # u_t = (1 + 2sin(5t) - H(x - 4)) u_x = u_x + 2sin(5t) u_x - H(x - 4) u_x
+   u_x  = np.copy(A) # u_x term
+   # make the first four rows of A 0 for the H(x - 4) term
+   A[0:4, :] = 0
+   u_t = (u_x + 2 * np.sin(5 * t) * u_x - A) @ x 
+   return u_t
 
-# Save the eigenfunctions as A13, A14, A16, A17
-A13 = np.abs(A13_A14_A16_A17[0])
-A14 = np.abs(A13_A14_A16_A17[1])
-A16 = np.abs(A13_A14_A16_A17[2])
-A17 = np.abs(A13_A14_A16_A17[3])
+sol = solve_ivp(lambda t,x: advectionPDE(t, x, A), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
 
-# Save the eigenvalues as A15, A18
-A15 = np.array((A15_A18[0], A15_A18[1]))
-A18 = np.array((A15_A18[2], A15_A18[3]))
+# Create surface plot
+X, T = np.meshgrid(x,sol.t)
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"},figsize =(25, 10))
+surf = ax.plot_surface(X, T, sol.y.T,cmap='magma')
+ax.plot3D(x, 0*x, f(x),'-r',linewidth=5)
+plt.xlabel('x')
+plt.ylabel('time')
+# title = 'Advection PDE with c(t, x) = (1 + 2sin(5t) - H(x - 4))
+plt.title('Advection PDE with c(t, x) = (1 + 2sin(5t) - H(x - 4))')
+plt.show()
+# %%
+# Question 2 Common
+h = 0.5 # our x step size
+# Set up the matrix A
+m = 4 # N value in x and y directions
+n = m*m # total size of matrix
 
-# Cast A13 through A17 as column vectors
-A13 = A13.reshape(-1, 1)
-A14 = A14.reshape(-1, 1)
-A16 = A16.reshape(-1, 1)
-A17 = A17.reshape(-1, 1)
+e1 = np.ones(n) # vector of ones
+Low1 = np.tile(np.concatenate((np.ones(m-1), [0])), (m,)) # Lower diagonal 1
+Low2 = np.tile(np.concatenate(([1], np.zeros(m-1))), (m,)) #Lower diagonal 2
+                                    # Low2 is NOT on the second lower diagonal,
+                                    # it is just the next lower diagonal we see
+                                    # in the matrix.
 
-# Cast A15 and A18 as row vectors
-A15 = A15.reshape(1, -1)
-A18 = A18.reshape(1, -1)
+Up1 = np.roll(Low1, 1) # Shift the array for spdiags
+Up2 = np.roll(Low2, m-1) # Shift the other array
 
+A = scipy.sparse.spdiags([e1, e1, Low2, Low1, -4*e1, Up1, Up2, e1, e1],
+                         [-(n-m), -m, -m+1, -1, 0, 1, m-1, m, (n-m)], n, n)
 
+#Set the first element of A equal to 2
+A = scipy.sparse.csr_matrix(A)
+A[0, 0] = 2
+
+# %%
+#Set up matrix B
+e1 = np.ones(n) # vector of ones
+
+#place the 1's in the correct places (-(n**2 - n), -n, n, (n**2 - n))
+B = scipy.sparse.spdiags([e1, -1 * e1, e1, -1 * e1],
+                         [-(n-m), -m, m, (n-m)], n, n)
+B = 1/(2 * h) * scipy.sparse.csr_matrix(B)
+
+# %%
+#Set up matrix C 
+Low1 = np.matlib.repmat(np.concatenate((np.ones((m-1)), np.array([0]))), 1,m).reshape(n)
+Low2 = np.matlib.repmat(np.concatenate((np.array([1]),np.zeros((m-1)))), 1,m).reshape(n)
+Up1 = np.roll(Low2, -1)
+Up2 = np.roll(Low1, -m+1)
+C = scipy.sparse.spdiags([Low2, -1 * Low1, Up2, -1 * Up1],
+                         [-(m - 1), -1, 1, (m - 1)], n, n)
+C = 1/(2 * h) * scipy.sparse.csr_matrix(C)
+# %%
+# Question 2 Part B
+f = lambda x,y: np.exp(-2*x**2 - (y**2 / 20))
+N = 64
+L = 10
+dt = (2 * L) / N
+nu = 0.001
+term = 4
+x = np.arange(-L, L, dt)
+y = np.arange(-L, L, dt)
+
+X, Y = np.meshgrid(x, y)
+y0 = f(X, Y)
+
+y0 = y0.reshape(N**2)
+
+# %%
+def myODEFun(t, omega):
+   #Solve for psi vector
+   psi = scipy.sparse.linalg.spsolve(A, omega)
+   # matrixone = -(C @ psi)
+   # matrixtwo = (B @ omega)
+   # matrixthree = matrixone @ matrixtwo
+   # matrixfour = (B @ psi)
+   # matrixfive = (C @ omega)
+   # matricesix = matrixfour @ matrixfive
+   # matrixseven = nu * A @ omega
+   # matrixeight = matrixthree + matricesix + matrixseven
+   #now we solve for omega_t
+   omega_t = -(C @ psi) * (B @ omega) + (B @ psi) * (C @ omega) + nu * A @ omega
+
+   return omega_t
+
+#%%
+sol = solve_ivp(lambda t, omega: myODEFun(t, omega), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
+X, T = np.meshgrid(x,sol.t)
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"},figsize =(25, 10))
+surf = ax.plot_surface(X, T, sol.y.T,cmap='magma')
+ax.plot3D(x, 0*x, f(x),'-r',linewidth=5)
+plt.xlabel('x')
+plt.ylabel('time')
+plt.show()
 # %%
