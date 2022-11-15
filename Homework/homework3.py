@@ -134,9 +134,8 @@ def myODEFunGauss(t, omega):
    omega = omega.reshape(N**2, 1)
    #Solve for psi vector
    psi = scipy.sparse.linalg.spsolve(A, omega)
-
+   psi = psi.reshape(N**2, 1)
    omega_t = -(C @ psi) * (B @ omega) + (B @ psi) * (C @ omega) + nu * A @ omega
-
    return omega_t
 
 def myODEFunLU(t, omega):
