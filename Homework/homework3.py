@@ -75,7 +75,7 @@ plt.show()
 # Question 2 Common
 h = 0.5 # our x step size
 # Set up the matrix A
-m = 4 # N value in x and y directions
+m = 64 # N value in x and y directions
 n = m*m # total size of matrix
 
 e1 = np.ones(n) # vector of ones
@@ -130,24 +130,26 @@ y0 = f(X, Y)
 y0 = y0.reshape(N**2)
 
 # %%
-def myODEFun(t, omega):
+def myODEFunGauss(t, omega):
+   omega = omega.reshape(N**2, 1)
    #Solve for psi vector
    psi = scipy.sparse.linalg.spsolve(A, omega)
-   # matrixone = -(C @ psi)
-   # matrixtwo = (B @ omega)
-   # matrixthree = matrixone @ matrixtwo
-   # matrixfour = (B @ psi)
-   # matrixfive = (C @ omega)
-   # matricesix = matrixfour @ matrixfive
-   # matrixseven = nu * A @ omega
-   # matrixeight = matrixthree + matricesix + matrixseven
-   #now we solve for omega_t
+
+   omega_t = -(C @ psi) * (B @ omega) + (B @ psi) * (C @ omega) + nu * A @ omega
+
+   return omega_t
+
+def myODEFunLU(t, omega):
+   #Solve for psi vector using LU decomposition
+   LU = scipy.sparse.linalg.splu(A)
+   psi = LU.solve(omega)
+
    omega_t = -(C @ psi) * (B @ omega) + (B @ psi) * (C @ omega) + nu * A @ omega
 
    return omega_t
 
 #%%
-sol = solve_ivp(lambda t, omega: myODEFun(t, omega), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
+sol = solve_ivp(lambda t, omega: myODEFunGauss(t, omega), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
 X, T = np.meshgrid(x,sol.t)
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"},figsize =(25, 10))
 surf = ax.plot_surface(X, T, sol.y.T,cmap='magma')
