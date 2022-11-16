@@ -159,10 +159,10 @@ def myODEFunGauss(t, omega):
    omega_t = (C @ psi) * (B @ omega) - (B @ psi) * (C @ omega) + nu * A @ omega
    return np.transpose(omega_t)
 
+LU = scipy.sparse.linalg.splu(A)
 def myODEFunLU(t, omega):
    omega = omega.reshape(N**2, 1)
    #Solve for psi vector using LU decomposition
-   LU = scipy.sparse.linalg.splu(A)
    psi = LU.solve(omega)
    psi = psi.reshape(N**2, 1)
    omega_t = (C @ psi) * (B @ omega) - (B @ psi) * (C @ omega) + nu * A @ omega
@@ -190,6 +190,7 @@ A6 = np.copy(C.todense())
 A7 = np.copy(sol.y)
 A8 = np.copy(sol2.y)
 
+print(A8)
 # %%
 # split the A8 solution matrix of size 9 x 4096 into a matrix of size 9 x 64 x 64 and save it as A9
 A9 = np.zeros((9, 64, 64)) 
@@ -205,7 +206,7 @@ for i in range(9):
 fig, axs = plt.subplots(3, 3, figsize=(5, 5))
 for i in range(3):
    for j in range(3):
-      axs[i, j].contourf(X, Y, A9[i*3 + j])
+      axs[i, j].contourf(Y, X, A9[i*3 + j])
       axs[i, j].set_xticklabels([])
       axs[i, j].set_yticklabels([])
       axs[i, j].set_title('t = ' + str(i * 3 + j))
@@ -217,7 +218,7 @@ plt.show()
 fig, axs = plt.subplots(3, 3, figsize=(5, 5))
 for i in range(3):
    for j in range(3):
-      axs[i, j].contourf(X, Y, A10[i*3 + j])
+      axs[i, j].contourf(Y, X, A10[i*3 + j])
       axs[i, j].set_xticklabels([])
       axs[i, j].set_yticklabels([])
       axs[i, j].set_title('t = ' + str(i * 3 + j))
