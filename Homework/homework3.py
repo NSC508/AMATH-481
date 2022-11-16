@@ -38,6 +38,7 @@ def advectionPDE(t, x):
 
 sol = solve_ivp(lambda t,x: advectionPDE(t, x), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
 
+print(sol.y)
 # Create surface plot
 X, T = np.meshgrid(x,sol.t)
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"},figsize =(25, 10))
@@ -93,6 +94,7 @@ f = lambda x,y: np.exp(-2*x**2 - (y**2 / 20))
 N = 64
 L = 10
 dt = (2 * L) / N
+print(dt)
 nu = 0.001
 term = 4
 x = np.arange(-L, L, dt)
@@ -145,15 +147,16 @@ Up1 = np.roll(Low2, -1)
 Up2 = np.roll(Low1, -m+1)
 C = scipy.sparse.spdiags([Low2, -1 * Low1, Up2, -1 * Up1],
                          [-(m - 1), -1, 1, (m - 1)], n, n)
+print(C.todense())
 C = 1/(2 * dt) * scipy.sparse.csr_matrix(C)
-
+#print(C.todense())
 # %%
 def myODEFunGauss(t, omega):
    omega = omega.reshape(N**2, 1)
    #Solve for psi vector
    psi = scipy.sparse.linalg.spsolve(A, omega)
    psi = psi.reshape(N**2, 1)
-   omega_t = -(C @ psi) * (B @ omega) + (B @ psi) * (C @ omega) + nu * A @ omega
+   omega_t = (C @ psi) * (B @ omega) - (B @ psi) * (C @ omega) + nu * A @ omega
    return np.transpose(omega_t)
 
 def myODEFunLU(t, omega):
@@ -162,7 +165,7 @@ def myODEFunLU(t, omega):
    LU = scipy.sparse.linalg.splu(A)
    psi = LU.solve(omega)
    psi = psi.reshape(N**2, 1)
-   omega_t = -(C @ psi) * (B @ omega) + (B @ psi) * (C @ omega) + nu * A @ omega
+   omega_t = (C @ psi) * (B @ omega) - (B @ psi) * (C @ omega) + nu * A @ omega
    return np.transpose(omega_t)
 
 #%%
