@@ -6,6 +6,8 @@ from scipy.sparse import spdiags
 import scipy
 import numpy.matlib
 import time
+from matplotlib.animation import FuncAnimation
+from random import randint
 #import matplotlib.animation as animation 
 # %% 
 # Question 1 Common
@@ -79,15 +81,6 @@ A3 = np.copy(sol.y)
 
 print(A2)
 # %%
-# x = [1, 2, 3]
-# y = [4, 5, 6]
-# X, Y = np.meshgrid(x, y)
-# f = lambda x, y: x + 0.5 * Y
-# Z = f(X, Y)
-# #stack the x and y values into a 1d array
-# Z = np.transpose(Z).reshape(9)
-# print(Z)
-# %%
 # Question 2 Common
 f = lambda x,y: np.exp(-2*x**2 - (y**2 / 20))
 N = 64
@@ -107,7 +100,7 @@ h = 0.5 # our t step size
 
 # %%
 # Set up the matrix A
-m = 64 # N value in x and y directions
+m = N # N value in x and y directions
 n = m*m # total size of matrix
 
 e1 = np.ones(n) # vector of ones
@@ -185,81 +178,64 @@ A6 = np.copy(C.todense())
 A7 = np.copy(sol.y)
 A8 = np.copy(sol2.y)
 
-print(A8)
 # %%
 # split the A8 solution matrix of size 9 x 4096 into a matrix of size 9 x 64 x 64 and save it as A9
 A9 = np.zeros((9, 64, 64)) 
 for i in range(9):
    A9[i] = A8[i].reshape(64, 64)
-
-#split the  A7 solution matrix of size 9 x 4096 into a matrix of size 9 x 64 x 64 and save it as A10
-A10 = np.zeros((9, 64, 64))
-for i in range(9):
-   A10[i] = A7[i].reshape(64, 64)
-
-# plot each of the 9 solutions in a contourf plot in a 3 x 3 grid and hide the axis labels
-fig, axs = plt.subplots(3, 3, figsize=(5, 5))
-for i in range(3):
-   for j in range(3):
-      axs[i, j].contourf(Y, X, A9[i*3 + j])
-      axs[i, j].set_xticklabels([])
-      axs[i, j].set_yticklabels([])
-      axs[i, j].set_title('t = ' + str(i * 3 + j))
-      axs[i, j].set_xlabel('x')
-      axs[i, j].set_ylabel('y')
-plt.show()
-
-# plot each of the 9 solutions in a contourf plot in a 3 x 3 grid and hide the axis labels
-fig, axs = plt.subplots(3, 3, figsize=(5, 5))
-for i in range(3):
-   for j in range(3):
-      axs[i, j].contourf(Y, X, A10[i*3 + j])
-      axs[i, j].set_xticklabels([])
-      axs[i, j].set_yticklabels([])
-      axs[i, j].set_title('t = ' + str(i * 3 + j))
-      axs[i, j].set_xlabel('x')
-      axs[i, j].set_ylabel('y')
-plt.show()
-
-
 # %%
+# #split the  A7 solution matrix of size 9 x 4096 into a matrix of size 9 x 64 x 64 and save it as A10
+# A10 = np.zeros((9, 64, 64))
+# for i in range(9):
+#    A10[i] = A7[i].reshape(64, 64)
+
+# # plot each of the 9 solutions in a contourf plot in a 3 x 3 grid and hide the axis labels
+# fig, axs = plt.subplots(3, 3, figsize=(5, 5))
+# for i in range(3):
+#    for j in range(3):
+#       axs[i, j].contourf(Y, X, A9[i*3 + j])
+#       axs[i, j].set_xticklabels([])
+#       axs[i, j].set_yticklabels([])
+#       axs[i, j].set_title('t = ' + str(i * 3 + j))
+#       axs[i, j].set_xlabel('x')
+#       axs[i, j].set_ylabel('y')
+# plt.show()
+
+# # plot each of the 9 solutions in a contourf plot in a 3 x 3 grid and hide the axis labels
+# fig, axs = plt.subplots(3, 3, figsize=(5, 5))
+# for i in range(3):
+#    for j in range(3):
+#       axs[i, j].contourf(Y, X, A10[i*3 + j])
+#       axs[i, j].set_xticklabels([])
+#       axs[i, j].set_yticklabels([])
+#       axs[i, j].set_title('t = ' + str(i * 3 + j))
+#       axs[i, j].set_xlabel('x')
+#       axs[i, j].set_ylabel('y')
+# plt.show()
+
+
+# # %%
 h = 0.01
 sol3 = solve_ivp(lambda t, omega: myODEFunLU(t, omega), [0, term], y0, t_eval=np.arange(0, term + h, h))
 
-from matplotlib import pyplot as plt
-import numpy as np
-from matplotlib.animation import FuncAnimation 
-   
-# initializing a figure in 
-# which the graph will be plotted
-fig = plt.figure() 
-   
-# marking the x-axis and y-axis
-axis = plt.axes(xlim =(0, 4), 
-                ylim =(-2, 2)) 
-  
-# initializing a line variable
-line, = axis.plot([], [], lw = 3) 
-   
-# data which the line will 
-# contain (x, y)
-def init(): 
-    line.set_data([], [])
-    return line,
-   
+solution = np.transpose(sol3.y)
+
+#%%
+#plot the solution in a contourf plot and animate it
+fig = plt.figure()
+ax = plt.axes(xlim=(-10, 10), ylim=(-10, 10))
+contour = ax.contourf(Y, X, solution[0].reshape(64, 64))
+fig.colorbar(contour, ax=ax)
 def animate(i):
-    x = np.linspace(0, 4, 1000)
-   
-    # plots a sine graph
-    y = np.sin(2 * np.pi * (x - 0.01 * i))
-    line.set_data(x, y)
-      
-    return line,
-   
-anim = FuncAnimation(fig, animate, init_func = init,
-                     frames = 200, interval = 20, blit = True)
-  
-   
-anim.save('continuousSineWave.mp4', 
-          writer = 'ffmpeg', fps = 30)
+   contour = ax.contourf(Y, X, solution[i].reshape(64, 64))
+   ax.set_title("Vortex Dynamics Equation Modeled at t = " + str(round(i * h, 2)))
+   return contour
+anim = FuncAnimation(fig, animate, frames=len(solution), interval=20, blit=False)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+#set the title of the plot
+plt.show()
+
+anim.save('animation.mp4', fps=30, extra_args=['-vcodec', 'libx264'])
+
 # %%
