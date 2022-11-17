@@ -6,6 +6,7 @@ from scipy.sparse import spdiags
 import scipy
 import numpy.matlib
 import time
+#import matplotlib.animation as animation 
 # %% 
 # Question 1 Common
 f = lambda x: np.exp(-(x-5)**2) # our inital condition
@@ -27,13 +28,12 @@ A[-1, 0] = 1
 A = A * 1/(2*dt)
 
 y0 = f(x)
-
 print(A)
 
 # %%
 # Question 1 Part A
 def advectionPDE(t, u):
-   u_t = 0.5 * A @ u # u_t = 0.5 u_x
+   u_t = 0.5 * (A @ u) # u_t = 0.5 u_x
    return u_t
 
 sol = solve_ivp(lambda t,u: advectionPDE(t, u), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
@@ -77,6 +77,7 @@ plt.show()
 
 A3 = np.copy(sol.y)
 
+print(A2)
 # %%
 # x = [1, 2, 3]
 # y = [4, 5, 6]
@@ -150,21 +151,17 @@ C = 1/(2 * dt) * scipy.sparse.csr_matrix(C)
 #print(C.todense())
 # %%
 def myODEFunGauss(t, omega):
-   omega = omega.reshape(N**2, 1)
    #Solve for psi vector
    psi = scipy.sparse.linalg.spsolve(A, omega)
-   psi = psi.reshape(N**2, 1)
    omega_t = (C @ psi) * (B @ omega) - (B @ psi) * (C @ omega) + nu * A @ omega
-   return np.transpose(omega_t)
+   return omega_t
 
 LU = scipy.sparse.linalg.splu(A)
 def myODEFunLU(t, omega):
-   omega = omega.reshape(N**2, 1)
    #Solve for psi vector using LU decomposition
    psi = LU.solve(omega)
-   psi = psi.reshape(N**2, 1)
-   omega_t = (C @ psi) * (B @ omega) - (B @ psi) * (C @ omega) + nu * A @ omega
-   return np.transpose(omega_t)
+   omega_t = (C @ psi) * (B @ omega) - (B @ psi) * (C @ omega) + (nu * (A @ omega))
+   return omega_t
 
 #%%
 tic = time.time()
@@ -225,4 +222,44 @@ for i in range(3):
 plt.show()
 
 
+# %%
+h = 0.01
+sol3 = solve_ivp(lambda t, omega: myODEFunLU(t, omega), [0, term], y0, t_eval=np.arange(0, term + h, h))
+
+from matplotlib import pyplot as plt
+import numpy as np
+from matplotlib.animation import FuncAnimation 
+   
+# initializing a figure in 
+# which the graph will be plotted
+fig = plt.figure() 
+   
+# marking the x-axis and y-axis
+axis = plt.axes(xlim =(0, 4), 
+                ylim =(-2, 2)) 
+  
+# initializing a line variable
+line, = axis.plot([], [], lw = 3) 
+   
+# data which the line will 
+# contain (x, y)
+def init(): 
+    line.set_data([], [])
+    return line,
+   
+def animate(i):
+    x = np.linspace(0, 4, 1000)
+   
+    # plots a sine graph
+    y = np.sin(2 * np.pi * (x - 0.01 * i))
+    line.set_data(x, y)
+      
+    return line,
+   
+anim = FuncAnimation(fig, animate, init_func = init,
+                     frames = 200, interval = 20, blit = True)
+  
+   
+anim.save('continuousSineWave.mp4', 
+          writer = 'ffmpeg', fps = 30)
 # %%
