@@ -32,11 +32,11 @@ print(A)
 
 # %%
 # Question 1 Part A
-def advectionPDE(t, x):
-   u_t = 0.5 * A @ x # u_t = 0.5 u_x
+def advectionPDE(t, u):
+   u_t = 0.5 * A @ u # u_t = 0.5 u_x
    return u_t
 
-sol = solve_ivp(lambda t,x: advectionPDE(t, x), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
+sol = solve_ivp(lambda t,u: advectionPDE(t, u), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
 
 print(sol.y)
 # Create surface plot
@@ -55,16 +55,14 @@ A2 = np.copy(sol.y)
 
 # %%
 # Question 1 Part B
-
-def advectionPDE(t, x, A):
+c = lambda t, x: 1 + 2 * np.sin(5 * t) - np.heaviside(x - 4, 0)
+def advectionPDE(t, u, A):
    # u_t = (1 + 2sin(5t) - H(x - 4)) u_x = u_x + 2sin(5t) u_x - H(x - 4) u_x
-   u_x  = np.copy(A) # u_x term
    # make the first four rows of A 0 for the H(x - 4) term
-   A[0:4, :] = 0
-   u_t = (u_x + 2 * np.sin(5 * t) * u_x - A) @ x 
+   u_t =  c(t, x) * (A @ u)
    return u_t
 
-sol = solve_ivp(lambda t,x: advectionPDE(t, x, A), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
+sol = solve_ivp(lambda t,u: advectionPDE(t, u, A), [0, term], y0, t_eval=np.arange(0, term + 0.5, 0.5))
 
 # Create surface plot
 X, T = np.meshgrid(x,sol.t)
