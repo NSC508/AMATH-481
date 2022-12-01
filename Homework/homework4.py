@@ -306,3 +306,5 @@ m, b = np.polyfit(np.log([dx, dx2, dx3, dx4]), np.log([A12, A14, A16, A18]), 1)
 ax.loglog([dx, dx2, dx3, dx4], np.exp(m * np.log([dx, dx2, dx3, dx4]) + b), label='line of best fit')
 ax.legend()
 plt.show()
+
+# %%
