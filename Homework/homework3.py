@@ -18,6 +18,7 @@ N = 200 # the number of points in our x domain
 dt = (2 * L)/N # our x step size
 x = np.arange(-L, L, dt) # our x domain
 
+# %%
 #Set up the matrix A 
 #it is a double-diagonal matrix with 1's on the lower and upper diagonals
 #and 0's on the main diagonal
@@ -83,7 +84,7 @@ print(A2)
 # %%
 # Question 2 Common
 f = lambda x,y: np.exp(-2*x**2 - (y**2 / 20))
-N = 64
+N = 128
 L = 10
 dt = (2 * L) / N
 print(dt)
@@ -183,23 +184,24 @@ A8 = np.copy(sol2.y)
 A9 = np.zeros((9, 64, 64)) 
 for i in range(9):
    A9[i] = A8[i].reshape(64, 64)
+print(A9)
 # %%
 # #split the  A7 solution matrix of size 9 x 4096 into a matrix of size 9 x 64 x 64 and save it as A10
 # A10 = np.zeros((9, 64, 64))
 # for i in range(9):
 #    A10[i] = A7[i].reshape(64, 64)
 
-# # plot each of the 9 solutions in a contourf plot in a 3 x 3 grid and hide the axis labels
-# fig, axs = plt.subplots(3, 3, figsize=(5, 5))
-# for i in range(3):
-#    for j in range(3):
-#       axs[i, j].contourf(Y, X, A9[i*3 + j])
-#       axs[i, j].set_xticklabels([])
-#       axs[i, j].set_yticklabels([])
-#       axs[i, j].set_title('t = ' + str(i * 3 + j))
-#       axs[i, j].set_xlabel('x')
-#       axs[i, j].set_ylabel('y')
-# plt.show()
+# plot each of the 9 solutions in a contourf plot in a 3 x 3 grid and hide the axis labels
+fig, axs = plt.subplots(3, 3, figsize=(5, 5))
+for i in range(3):
+   for j in range(3):
+      axs[i, j].contourf(Y, X, A9[i*3 + j])
+      axs[i, j].set_xticklabels([])
+      axs[i, j].set_yticklabels([])
+      axs[i, j].set_title('t = ' + str(i * 3 + j))
+      axs[i, j].set_xlabel('x')
+      axs[i, j].set_ylabel('y')
+plt.show()
 
 # # plot each of the 9 solutions in a contourf plot in a 3 x 3 grid and hide the axis labels
 # fig, axs = plt.subplots(3, 3, figsize=(5, 5))
@@ -237,5 +239,3 @@ ax.set_ylabel('y')
 plt.show()
 
 anim.save('animation.mp4', fps=30, extra_args=['-vcodec', 'libx264'])
-
-# %%

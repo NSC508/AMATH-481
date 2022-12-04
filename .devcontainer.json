@@ -1,8 +1,9 @@
 {
+  // "image": "texlive/texlive:latest",
   "image": "jupyter/datascience-notebook",
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python", "ms-toolsai.jupyter", "github.copilot"]
+      "extensions": ["ms-python.python", "ms-toolsai.jupyter", "github.copilot", "james-yu.latex-workshop"]
     }
   }
 }

@@ -18,7 +18,6 @@ e2 = 16 * np.ones(n)
 e3 = -1 * np.ones(n)
 A = scipy.sparse.spdiags([e3, e2, e1, e2, e3],
                          [-2, -1, 0, 1, 2], n, n, format='csc')
-#A = scipy.sparse.lil_matrix(A)
 A[0, -1] = 16
 A[0, -2] = -1
 A[1, -1] = -1
@@ -276,35 +275,42 @@ A18 = np.linalg.norm(second - exact)
 #plot the norms of dx, dx2, dx3, and dx4 against A11, A13, A15, A17 on a loglog plot
 
 fig, ax = plt.subplots()
-ax.loglog(dx, A11, 'o', label='128')
-ax.loglog(dx2, A13, 'o', label='256')
-ax.loglog(dx3, A15, 'o', label='512')
-ax.loglog(dx4, A17, 'o', label='1024')
-ax.set_xlabel('dx')
-ax.set_ylabel('norm')
+ax.loglog(dx, A11, 'o')
+ax.loglog(dx2, A13, 'o')
+ax.loglog(dx3, A15, 'o')
+ax.loglog(dx4, A17, 'o')
+ax.loglog(dx, A12, 'o')
+ax.loglog(dx2, A14, 'o')
+ax.loglog(dx3, A16, 'o')
+ax.loglog(dx4, A18, 'o')
+ax.set_xlabel('$\Delta$x')
+ax.set_ylabel('2-norm error')
 #set the title of the plot to be '(1, 4) method error analysis with various dx'
-ax.set_title('(1, 4) method error analysis with various dx')
+ax.set_title('Error Analysis with various $\Delta$x')
 #make a line of best fit for the data
 m, b = np.polyfit(np.log([dx, dx2, dx3, dx4]), np.log([A11, A13, A15, A17]), 1)
-ax.loglog([dx, dx2, dx3, dx4], np.exp(m * np.log([dx, dx2, dx3, dx4]) + b), label='line of best fit')
-ax.legend()
-plt.show()
-# %%
-#plot the norms of dx, dx2, dx3, and dx4 against A12, A14, A16, A18 on a loglog plot
-
-fig, ax = plt.subplots()
-ax.loglog(dx, A12, 'o', label='128')
-ax.loglog(dx2, A14, 'o', label='256')
-ax.loglog(dx3, A16, 'o', label='512')
-ax.loglog(dx4, A18, 'o', label='1024')
-ax.set_xlabel('dx')
-ax.set_ylabel('norm')
-#set the title of the plot to be 'Crank-Nicolson method error analysis with various dx'
-ax.set_title('Crank-Nicolson method error analysis with various dx')
-#make a line of best fit for the data
+ax.loglog([dx, dx2, dx3, dx4], np.exp(m * np.log([dx, dx2, dx3, dx4]) + b), label='(1, 4) line of best fit')
 m, b = np.polyfit(np.log([dx, dx2, dx3, dx4]), np.log([A12, A14, A16, A18]), 1)
-ax.loglog([dx, dx2, dx3, dx4], np.exp(m * np.log([dx, dx2, dx3, dx4]) + b), label='line of best fit')
+ax.loglog([dx, dx2, dx3, dx4], np.exp(m * np.log([dx, dx2, dx3, dx4]) + b), label='Crank-Nicolson line of best fit')
 ax.legend()
 plt.show()
+# # %%
+# #plot the norms of dx, dx2, dx3, and dx4 against A12, A14, A16, A18 on a loglog plot
+
+# fig, ax = plt.subplots()
+# ax.loglog(dx, A12, 'o', label='128')
+# ax.loglog(dx2, A14, 'o', label='256')
+# ax.loglog(dx3, A16, 'o', label='512')
+# ax.loglog(dx4, A18, 'o', label='1024')
+# ax.set_xlabel('dx')
+# ax.set_ylabel('norm')
+# #set the title of the plot to be 'Crank-Nicolson method error analysis with various dx'
+# ax.set_title('Crank-Nicolson method error analysis with various dx')
+# #make a line of best fit for the data
+# m, b = np.polyfit(np.log([dx, dx2, dx3, dx4]), np.log([A12, A14, A16, A18]), 1)
+# ax.loglog([dx, dx2, dx3, dx4], np.exp(m * np.log([dx, dx2, dx3, dx4]) + b), label='line of best fit')
+# ax.legend()
+# plt.show()
+
 
 # %%
