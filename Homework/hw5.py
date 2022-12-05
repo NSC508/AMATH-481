@@ -70,3 +70,10 @@ plt.imshow(np.real(A9))
 plt.show()
 
 # %%
+m = 3
+alpha = 1
+n = 30
+x = np.linspace(-10, 10, n)
+y = np.linspace(-10, 10, n)
+
+A = np.diag(-1 * np.ones(n-1), k=-1) + np.diag(np.ones(n-1), k=1)
