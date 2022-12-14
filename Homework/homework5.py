@@ -137,27 +137,20 @@ plt.show()
 
 # %%
 # Question 2
-m = 3
+m = 2
 alpha = 1
-n = 30
+N = 30
 x = np.linspace(-10, 10, n)
 y = np.linspace(-10, 10, n)
-
-A = np.diag(-1 * np.ones((n-1)**2), k=-1) + np.diag(np.ones((n-1)**2), k=1)
-
-#remove first and last row and column
-A = A[1:-1, 1:-1]
-
-#save the matrix A to A10
-A10 = A
-
-# %%
-N = 30 
+alpha = 1
 D, x = cheb(N)
 x = x.reshape(N + 1)
+D1 = 0.1
+D2 = 0.1
+beta = 1
 
-D2 = D @ D
-D2 = D2[1:-1, 1:-1]
+D_2 = D @ D
+D_2 = D_2[1:-1, 1:-1]
 x2 = x[1:-1]
 y2 = x2.copy()
 X, Y = np.meshgrid(x2, y2)
@@ -173,4 +166,65 @@ A12 = V
 stacked = np.concatenate((U,V), axis=None)
 
 A13 = stacked
+
+I = np.eye(len(D_2))
+
+Lap = np.kron(D_2, I) + np.kron(I, D_2)
+
+A10 = Lap
+# %%
+
+u_hat_0 = np.reshape(U, (N-1)**2, order = 'F')
+v_hat_0 = np.reshape(V, (N-1)**2, order = 'F')
+stacked = np.concatenate((u_hat_0,v_hat_0), axis=None)
+
+A13 = stacked
+
+A13 = np.reshape(A13, ((N-1)**2*2, 1))
+# %%
+def rhs(t, x):
+    U = x[:(N-1)**2]
+    V = x[(N-1)**2:]
+
+    U = np.reshape(U, (N-1,N-1), order='F')
+    V = np.reshape(V, (N-1,N-1), order='F')
+
+    A_squared = U*U+V*V
+
+    U_hat = lam(A_squared)@U - omega(A_squared)@V + (D1 * Lap)@U
+    V_hat = omega(A_squared)@U - lam(A_squared)@V + (D2 * Lap)@V
+
+    U_hat = np.reshape(U_hat, (N-1)**2, order='F')
+    V_hat = np.reshape(V_hat, (N-1)**2, order='F')
+
+    U_hat = np.reshape(U_hat.T, (N-1)**2)
+    V_hat = np.reshape(V_hat.T, (N-1)**2)
+    x = np.concatenate((U_hat,V_hat))
+
+    return x
+
+# %%
+
+sol = solve_ivp(lambda t, z: rhs(t, z), [0, 25], stacked, method='RK45', t_eval=t_span)
+
+print(sol.t)
+A14 = sol.y
+
+# %%
+t_wanted_index = 4
+u_wanted = sol.y[:n**2, t_wanted_index]
+A15 = u_wanted
+
+#reshape u_wanted into two (n-1) by (n-1) arrays
+U_2 = u_wanted[:n**2]
+V_2 = u_wanted[n**2:]
+
+U_2 = np.reshape(U_2, (n-1,n-1), order='F')
+V_2 = np.reshape(V_2, (n-1,n-1), order='F')
+
+#padd the matrix with 0s in the first and last row and column
+U_2 = np.pad(U_2, ((1,1),(1,1)), 'constant', constant_values=(0,0))
+V_2 = np.pad(V_2, ((1,1),(1,1)), 'constant', constant_values=(0,0))
+
+A16 = V_2
 # %%
