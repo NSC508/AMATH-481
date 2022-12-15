@@ -2,7 +2,26 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-from cheb import cheb
+# %%
+def cheb(N):
+    # N is the number of points in the interior.
+    if N==0:
+        D = 0
+        x = 1
+        return D, x
+    vals = np.linspace(0, N, N+1)
+    x = np.cos(np.pi*vals/N)
+    x = x.reshape(-1, 1)
+    c = np.ones(N-1)
+    c = np.pad(c, (1,), constant_values = 2)
+    c *= (-1)**vals
+    c = c.reshape(-1, 1)
+    X = np.tile(x, (1, N+1))
+    dX = X-X.T                  
+    D  = (c*(1/c.T))/(dX+(np.eye(N+1)))       #off-diagonal entries
+    D  = D - np.diag(sum(D.T))                #diagonal entries
+
+    return D, x
 #%% 
 n = 64
 L = 20
@@ -140,11 +159,14 @@ plt.show()
 m = 2
 alpha = 1
 N = 30
+L = 20
 x = np.linspace(-10, 10, n)
 y = np.linspace(-10, 10, n)
 alpha = 1
 D, x = cheb(N)
 x = x.reshape(N + 1)
+x = x*L/2
+D = D / (L / 2)
 D1 = 0.1
 D2 = 0.1
 beta = 1
@@ -186,8 +208,8 @@ def rhs(t, x):
     U = x[:(N-1)**2]
     V = x[(N-1)**2:]
 
-    U = np.reshape(U, (N-1,N-1), order='F')
-    V = np.reshape(V, (N-1,N-1), order='F')
+    # U = np.reshape(U, (N-1,N-1), order='F')
+    # V = np.reshape(V, (N-1,N-1), order='F')
 
     A_squared = U*U+V*V
 
@@ -216,15 +238,22 @@ u_wanted = sol.y[:n**2, t_wanted_index]
 A15 = u_wanted
 
 #reshape u_wanted into two (n-1) by (n-1) arrays
-U_2 = u_wanted[:n**2]
-V_2 = u_wanted[n**2:]
+U_2 = u_wanted[:(N-1)**2]
+V_2 = u_wanted[(N-1)**2:]
 
-U_2 = np.reshape(U_2, (n-1,n-1), order='F')
-V_2 = np.reshape(V_2, (n-1,n-1), order='F')
+U_2 = np.reshape(U_2, (N-1,N-1), order='F')
+V_2 = np.reshape(V_2, (N-1,N-1), order='F')
 
 #padd the matrix with 0s in the first and last row and column
 U_2 = np.pad(U_2, ((1,1),(1,1)), 'constant', constant_values=(0,0))
 V_2 = np.pad(V_2, ((1,1),(1,1)), 'constant', constant_values=(0,0))
 
 A16 = V_2
+# %%
+plt.imshow(A16)
+#change x and y bounds to be from -10 to 8
+# plt.xlim(20, 40)
+# plt.ylim(20, 40)
+plt.colorbar()
+plt.show()
 # %%
