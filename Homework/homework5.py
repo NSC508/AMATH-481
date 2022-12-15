@@ -67,30 +67,6 @@ stacked = np.concatenate((u_hat_0,v_hat_0), axis=None)
 stacked = np.reshape(stacked, (n**2*2, 1), order = 'F')
 #save the imaginary part of stacked to A4
 A4 = np.imag(stacked)
-
-# %%
-# A_squared = u*u+v*v
-
-# NL_U = lam(A_squared)*u-omega(A_squared)*v
-# NL_V = omega(A_squared)*u-lam(A_squared)*v
-
-# NL_U_Hat = np.fft.fft2(NL_U)
-# NL_V_Hat = np.fft.fft2(NL_V)
-
-# NL_U_Hat = np.reshape(NL_U_Hat, n**2, order='F')
-# NL_V_Hat = np.reshape(NL_V_Hat, n**2, order='F')
-
-# u_hat = np.reshape(u, n**2, order='F')
-# v_hat = np.reshape(v, n**2, order='F')
-
-# u_hat = NL_U_Hat - D1*kvec*u_hat
-# v_hat = NL_V_Hat - D2*kvec*v_hat
-
-# u_hat = np.reshape(u_hat.T, (n**2,))
-# v_hat = np.reshape(v_hat.T, (n**2,))
-# stacked = np.concatenate((u_hat,v_hat))
-
-
 # %%
 #use RK45 to get the solution at each time step
 def f(t, z, k):    
