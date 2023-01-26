@@ -1,6 +1,7 @@
 {
+  "image": "rocm/jax",
   // "image": "texlive/texlive:latest",
-  "image": "jupyter/datascience-notebook",
+  //"image": "jupyter/datascience-notebook",
   "customizations": {
     "vscode": {
       "extensions": ["ms-python.python", "ms-toolsai.jupyter", "github.copilot", "james-yu.latex-workshop"]
